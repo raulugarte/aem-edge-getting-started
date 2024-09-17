@@ -36,7 +36,7 @@ export default function decorate(block) {
   console.log(slug2);
   console.log(requestRUG);
 
-  fetch(aem + '/graphql/execute.json/aem-demo-assets/adventures-by-slug;slug=' + slug)
+  fetch(aem + '/graphql/execute.json/aem-demo-assets/adventures-by-slug;slug=' + slug2)
 //fetch(aem + '/graphql/execute.json/bs/article-by-slug;slug=' + slug2)
 .then(response => response.json())
 .then(response => {
