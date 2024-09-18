@@ -103,7 +103,7 @@ section:nth-child(8) p {
   padding: 3.5em 2em 2em;
 }
 
-img {
+.content-fragment-wrapper img {
   width: 1200px;
 }
 
