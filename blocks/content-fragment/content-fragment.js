@@ -42,7 +42,10 @@ fetch(requestRUG)
 .then(response => response.json())
 .then(response => {
 
-const backgroundImage = response.data.adventureList.items[0].PrimaryImage._publishUrl;
+  console.log(response.data.adventureList.items[0].primaryImage._dynamicUrl);
+  console.log(response.data.adventureList.items[0].primaryImage._publishUrl);
+
+const backgroundImage = response.data.adventureList.items[0].primaryImage._publishUrl;
 //  const backgroundImage = response.data.adventureList.items[0].PrimaryImage._dynamicUrl;
 //const backgroundImage = response.data.articleList.items[0].image._publishUrl;
 document.getElementById(adventureDiv.id).innerHTML = "<section><img src=" + backgroundImage + "></section>";  
