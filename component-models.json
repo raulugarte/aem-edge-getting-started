@@ -105,7 +105,7 @@
         "options": [
           {
             "name": "Highlight",
-            "value": "highlight",
+            "value": "highlight"
           },
             {
             "name": "RUGHighlight",
