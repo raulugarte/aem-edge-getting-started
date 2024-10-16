@@ -1,8 +1,16 @@
+/* eslint-disable no-shadow */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-restricted-globals */
 import { getMetadata } from '../../scripts/aem.js';
+// import { getActiveAudiences } from '../../scripts/utils.js';
 import { loadFragment } from '../fragment/fragment.js';
+import authenticate from './auth.js';
 
 // media query match that indicates mobile/tablet width
 const isDesktop = window.matchMedia('(min-width: 900px)');
+const LOGIN_FORM = `<button type="button" aria-label="Login">
+<span>Sign in</span>
+</button>`;
 
 function closeOnEscape(e) {
   if (e.code === 'Escape') {
@@ -17,21 +25,6 @@ function closeOnEscape(e) {
       // eslint-disable-next-line no-use-before-define
       toggleMenu(nav, navSections);
       nav.querySelector('button').focus();
-    }
-  }
-}
-
-function closeOnFocusLost(e) {
-  const nav = e.currentTarget;
-  if (!nav.contains(e.relatedTarget)) {
-    const navSections = nav.querySelector('.nav-sections');
-    const navSectionExpanded = navSections.querySelector('[aria-expanded="true"]');
-    if (navSectionExpanded && isDesktop.matches) {
-      // eslint-disable-next-line no-use-before-define
-      toggleAllNavSections(navSections, false);
-    } else if (!isDesktop.matches) {
-      // eslint-disable-next-line no-use-before-define
-      toggleMenu(nav, navSections, false);
     }
   }
 }
@@ -80,41 +73,51 @@ function toggleMenu(nav, navSections, forceExpanded = null) {
   if (isDesktop.matches) {
     navDrops.forEach((drop) => {
       if (!drop.hasAttribute('tabindex')) {
+        drop.setAttribute('role', 'button');
         drop.setAttribute('tabindex', 0);
         drop.addEventListener('focus', focusNavSection);
       }
     });
   } else {
     navDrops.forEach((drop) => {
+      drop.removeAttribute('role');
       drop.removeAttribute('tabindex');
       drop.removeEventListener('focus', focusNavSection);
     });
   }
-
   // enable menu collapse on escape keypress
   if (!expanded || isDesktop.matches) {
     // collapse menu on escape press
     window.addEventListener('keydown', closeOnEscape);
-    // collapse menu on focus lost
-    nav.addEventListener('focusout', closeOnFocusLost);
   } else {
     window.removeEventListener('keydown', closeOnEscape);
-    nav.removeEventListener('focusout', closeOnFocusLost);
   }
 }
 
+export function decorateNavAuth() {
+  const auth = document.getElementsByClassName('nav-auth')[0];
+  auth.innerHTML = `<button type="button" id="logout" aria-label="Login">
+            <span>Sign out</span>
+          </button>`;
+  const logoutButton = auth.children[0];
+  logoutButton.addEventListener('click', () => {
+    auth.innerHTML = LOGIN_FORM;
+    window.localStorage.removeItem('auth');
+    location.reload();
+  });
+}
+
 /**
- * loads and decorates the header, mainly the nav
+ * decorates the header, mainly the nav
  * @param {Element} block The header block element
  */
 export default async function decorate(block) {
   // load nav as fragment
   const navMeta = getMetadata('nav');
-  const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
+  const navPath = navMeta ? new URL(navMeta).pathname : '/nav';
   const fragment = await loadFragment(navPath);
 
   // decorate nav DOM
-  block.textContent = '';
   const nav = document.createElement('nav');
   nav.id = 'nav';
   while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
@@ -130,6 +133,7 @@ export default async function decorate(block) {
   if (brandLink) {
     brandLink.className = '';
     brandLink.closest('.button-container').className = '';
+    brandLink.querySelector('img').setAttribute('alt', 'logo');
   }
 
   const navSections = nav.querySelector('.nav-sections');
@@ -158,6 +162,50 @@ export default async function decorate(block) {
   // prevent mobile nav behavior on window resize
   toggleMenu(nav, navSections, isDesktop.matches);
   isDesktop.addEventListener('change', () => toggleMenu(nav, navSections, isDesktop.matches));
+
+  // login section
+  const auth = document.createElement('div');
+  auth.classList.add('nav-auth');
+  // console.log(getActiveAudiences());
+  if (window.localStorage.getItem('auth') === null) {
+    auth.innerHTML = LOGIN_FORM;
+    auth.addEventListener('click', () => {
+      const loginForm = document.getElementsByClassName('login-form')[0];
+      loginForm.style.display = 'block';
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('userName').value;
+        const password = document.getElementById('password').value;
+
+        authenticate(username, password).then((user) => {
+          // console.log(user);
+          const auth = document.getElementsByClassName('nav-auth')[0];
+          auth.innerHTML = `<button type="button" id="logout" aria-label="Login">
+            <span>Sign out</span>
+          </button>`;
+          const logoutButton = document.getElementById('logout');
+          logoutButton.addEventListener('click', () => {
+            auth.innerHTML = LOGIN_FORM;
+            window.localStorage.removeItem('auth');
+            const loginForm = document.getElementsByClassName('login-form')[0];
+            loginForm.style.display = 'none';
+          });
+        });
+        // handle submit
+      });
+    });
+  } else {
+    auth.innerHTML = `<button type="button" id="logout" aria-label="Login">
+            <span>Sign out</span>
+          </button>`;
+    const logoutButton = auth.children[0];
+    logoutButton.addEventListener('click', () => {
+      window.localStorage.removeItem('auth');
+      location.reload();
+    });
+  }
+
+  nav.append(auth);
 
   const navWrapper = document.createElement('div');
   navWrapper.className = 'nav-wrapper';
