@@ -1,17 +1,28 @@
 [
   {
-    "id": "image",
+    "id": "page-metadata",
     "fields": [
       {
-        "component": "reference",
-        "name": "image",
-        "label": "Image",
-        "multi": false
+        "component": "text-input",
+        "valueType": "string",
+        "name": "pagetitle",
+        "value": "",
+        "label": "Page Title"
       },
       {
         "component": "text",
-        "name": "imageAlt",
-        "label": "Alt Text"
+        "valueType": "string",
+        "name": "jcr:description",
+        "value": "",
+        "label": "Description"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "keywords",
+        "value": "",
+        "label": "Keywords",
+        "multi": true
       }
     ]
   },
@@ -19,14 +30,18 @@
     "id": "title",
     "fields": [
       {
-        "component": "text",
-        "name": "title",
-        "label": "Title"
+        "component": "text-input",
+        "valueType": "string",
+        "name": "jcr:title",
+        "value": "",
+        "label": "Text"
       },
       {
         "component": "select",
-        "name": "titleType",
-        "label": "Title Type",
+        "name": "type",
+        "value": "h1",
+        "label": "Type",
+        "valueType": "string",
         "options": [
           {
             "name": "h1",
@@ -57,27 +72,54 @@
     ]
   },
   {
+    "id": "image",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "fileReference",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text-input",
+        "valueType": "string",
+        "name": "alt",
+        "value": "Default alt",
+        "label": "Alt Text"
+      }
+    ]
+  },
+  {
     "id": "button",
     "fields": [
       {
-        "component": "aem-content",
-        "name": "link",
+        "component": "text-input",
+        "valueType": "string",
+        "name": "href",
+        "value": "",
         "label": "Link"
       },
       {
-        "component": "text",
-        "name": "linkText",
+        "component": "text-input",
+        "valueType": "string",
+        "name": "text",
+        "value": "",
         "label": "Text"
       },
       {
-        "component": "text",
-        "name": "linkTitle",
+        "component": "text-input",
+        "valueType": "string",
+        "name": "title",
+        "value": "",
         "label": "Title"
       },
       {
         "component": "select",
-        "name": "linkType",
+        "name": "type",
+        "value": "",
         "label": "Type",
+        "valueType": "string",
         "options": [
           {
             "name": "default",
@@ -96,22 +138,33 @@
     ]
   },
   {
-    "id": "section",
+    "id": "columns",
     "fields": [
       {
-        "component": "multiselect",
-        "name": "style",
+        "component": "text-input",
+        "valueType": "number",
+        "name": "columns",
+        "value": "",
+        "label": "Columns"
+      },
+      {
+        "component": "text-input",
+        "valueType": "number",
+        "name": "rows",
+        "value": "",
+        "label": "Rows"
+      }
+    ]
+  },
+  {
+    "id": "cards",
+    "fields": [
+      {
+        "component": "text-input",
+        "name": "classes",
         "label": "Style",
-        "options": [
-          {
-            "name": "Highlight",
-            "value": "highlight"
-          },
-            {
-            "name": "RUGHighlight",
-            "value": "rughighlight"
-          }
-        ]
+        "valueType": "string",
+        "required": true        
       }
     ]
   },
@@ -126,7 +179,7 @@
         "multi": false
       },
       {
-        "component": "richtext",
+        "component": "text-area",
         "name": "text",
         "value": "",
         "label": "Text",
@@ -135,31 +188,14 @@
     ]
   },
   {
-    "id": "columns",
+    "id": "section",
     "fields": [
       {
-        "component": "text",
-        "valueType": "number",
-        "name": "columns",
+        "component": "text-input",
+        "name": "style",
         "value": "",
-        "label": "Columns"
-      },
-      {
-        "component": "text",
-        "valueType": "number",
-        "name": "rows",
-        "value": "",
-        "label": "Rows"
-      }
-    ]
-  },
-  {
-    "id": "fragment",
-    "fields": [
-      {
-        "component": "aem-content",
-        "name": "reference",
-        "label": "Reference"
+        "label": "Style",
+        "valueType": "string"
       }
     ]
   },
@@ -174,106 +210,193 @@
         "multi": false
       },
       {
-        "component": "text",
+        "component": "text-input",
         "valueType": "string",
         "name": "imageAlt",
         "label": "Alt",
         "value": ""
       },
       {
-        "component": "richtext",
+        "component": "text-area",
         "name": "text",
+        "value": "",
+        "label": "Text",
+        "valueType": "string"
+      },
+      {
+        "component": "multiselect",
+        "name": "classes",
+        "label": "Style",
+        "valueType": "string",
+        "required": true,
+        "maxSize": 3,
+        "options": [
+          {
+            "name": "Theme",
+            "children": [
+              {
+                "name": "Light",
+                "value": "light"
+              },
+              {
+                "name": "Dark",
+                "value": "dark"
+              }
+            ]
+          },
+          {
+            "name": "Features",
+            "children": [
+              {
+                "name": "Show Login Box",
+                "value": "authbox"
+              }
+            ]
+          }
+        ]
+      }      
+    ]
+  },
+  {
+    "id": "feature",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text-input",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt",
+        "value": ""
+      },
+      {
+        "component": "text-area",
+        "name": "text",
+        "value": "",
+        "label": "Text",
+        "valueType": "string"
+      },
+      {
+        "component": "text-area",
+        "name": "text2",
         "value": "",
         "label": "Text",
         "valueType": "string"
       }
     ]
   },
-
-
-
-
-{
-  "id": "quote",
-  "fields": [
-     {
-       "component": "text-area",
-       "name": "quote",
-       "value": "",
-       "label": "Quote",
-       "valueType": "string"
-     },
-     {
-       "component": "text-input",
-       "valueType": "string",
-       "name": "author",
-       "label": "Author",
-       "value": ""
-     }
-   ]
-},
-
-
-
-   {
-    "id": "content-fragment",
+  {
+    "id": "forex",
+    "fields": [
+      {
+        "component": "select",
+        "name": "baseCurrency",
+        "value": "AUD",
+        "label": "Base Currency",
+        "valueType": "string",
+        "options": [
+          {
+            "name": "Australian Dollar",
+            "value": "AUD"
+          },
+          {
+            "name": "US Dollar",
+            "value": "USD"
+          },
+          {
+            "name": "Pound Sterling",
+            "value": "GBP"
+          },
+          {
+            "name": "Canadian Dollar",
+            "value": "CAD"
+          },
+          {
+            "name": "Euro",
+            "value": "EUR"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "map",
     "fields": [
       {
         "component": "text-input",
-        "name": "text",
+        "name": "location",
         "value": "",
-        "label": "Slug",
-        "valueType": "string"
-      }
-    ]
-  }, 
-    {
-    "id": "slide",
-    "fields": [
-      {
-        "component": "reference",
-        "valueType": "string",
-        "name": "image",
-        "label": "Image",
-        "multi": false
-      },
-      {
-        "component": "text-area",
-        "name": "text",
-        "value": "",
-        "label": "Text",
+        "label": "Location",
         "valueType": "string"
       }
     ]
   },
-
   {
-    "id": "teaser",
+    "id": "offer",
     "fields": [
       {
-        "component": "reference",
-        "valueType": "string",
-        "name": "image",
-        "label": "Image",
-        "multi": false
+        "component": "aem-content-fragment",
+        "name": "offerpath",
+        "value": "",
+        "label": "Offer Content Fragment path",
+        "valueType": "string"
       },
       {
-        "component": "text-area",
-        "name": "text",
+        "component": "text-input",
+        "name": "variation",
         "value": "",
-        "label": "Text",
+        "label": "Variation",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "featurearticles",
+    "fields": [
+      {
+        "component": "aem-tag",
+        "name": "tag",
+        "value": "",
+        "label": "Tag",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "fragment",
+    "fields": [
+      {
+        "component": "text-input",
+        "name": "fragmentpath",
+        "value": "",
+        "label": "Fragment Path",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "faq",
+    "fields": [
+      {
+        "component": "aem-tag",
+        "name": "tags",
+        "value": "transactions",
+        "label": "Tag",
+        "valueType": "string",
+        "rootPath": "/content/cq:tags/securbank"
+      },
+      {
+        "component": "text-input",
+        "name": "variation",
+        "value": "master",
+        "label": "Variation",
         "valueType": "string"
       }
     ]
   }
-
-
-  
-
-
-
-
-
-
-  
 ]

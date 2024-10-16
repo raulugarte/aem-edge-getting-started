@@ -6,33 +6,8 @@
     ]
   },
   {
-    "id": "section",
-    "components": [
-      "text",
-      "image",
-      "button",
-      "title",
-      "teaser",
-      "hero",
-      "cards",
-      "columns",
-      "fragment",
-      "quote",
-      "content-fragment",
-      "carousel"
-    ]
-  },
-  {
-    "id": "cards",
-    "components": [
-      "card"
-    ]
-  },
-  {
     "id": "columns",
-    "components": [
-      "column"
-    ]
+    "components": []
   },
   {
     "id": "column",
@@ -40,7 +15,33 @@
       "text",
       "image",
       "button",
-      "title"
+      "title",
+      "creditcardsummary"
+    ]
+  },
+  {
+    "id": "section",
+    "components": [
+      "text",
+      "image",
+      "button",
+      "title",
+      "hero",
+      "cards",
+      "columns",
+      "feature",
+      "forex",
+      "map",
+      "offer",
+      "featurearticles",
+      "fragment",
+      "faq"
+    ]
+  },
+  {
+    "id": "cards",
+    "components": [
+      "card"
     ]
   }
 ]
