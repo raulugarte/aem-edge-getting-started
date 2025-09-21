@@ -1,5 +1,4 @@
 
-/*
 
 export default async function decorate(block) {
   const aempublishurl = 'https://publish-p130407-e1279066.adobeaemcloud.com';
