@@ -55,7 +55,7 @@ export default async function decorate(block) {
   const aempublishurl = 'https://publish-p130407-e1279066.adobeaemcloud.com';
   const aemauthorurl = 'https://author-p130407-e1279066.adobeaemcloud.com';
   // Name of your persisted GraphQL query
-  const persistedquery = '/graphql/execute.json/aldi-rug/recipe2ByPath';
+  const persistedquery = '/graphql/execute.json/securbank/Getrecipe2ByPath';
 
   // Get the path and variation from your block DOM
   const recipepath = block.querySelector(':scope div:nth-child(1) > div a').innerHTML.trim();
