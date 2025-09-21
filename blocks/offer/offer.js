@@ -41,51 +41,64 @@ export default async function decorate(block) {
 */
 
 
-
 /* eslint-disable no-underscore-dangle */
+// Block: recipe
+// Purpose: Render a "recipe" Content Fragment via persisted GraphQL query with Universal Editor (UE) authoring hooks.
+// Inputs (from block markup):
+//   - 1st cell: <a> with the CF path (e.g., /content/dam/…/my-recipe)
+//   - 2nd cell: variation name (e.g., master). Optional; defaults to "master".
+
 export default async function decorate(block) {
   // --- ENV CONFIG ---
   const aempublishurl = 'https://publish-p130407-e1279066.adobeaemcloud.com';
   const aemauthorurl = 'https://author-p130407-e1279066.adobeaemcloud.com';
+  const persistedquery = '/graphql/execute.json/securbank/RecipeByPath';
 
-  // IMPORTANT: Persist a new query named "RecipeByPath" (see example below)
-  const persistedquery = '/graphql/execute.json/aem-bp-comm-rug/RecipeByPath';
+  // --- HELPERS ---
+  const isAuthor = typeof window !== 'undefined'
+    && window.location?.origin?.includes('author');
+
+  const escapeHtml = (str) => (str || '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[c]));
+
+  // Turn plaintext (from CF rich text) into simple HTML line breaks
+  const nl2br = (str) => escapeHtml(str || '').replace(/\r?\n/g, '<br>');
+
+  // Safe text extraction from block config cells
+  const getCellText = (selector) => block.querySelector(selector)?.textContent?.trim() || '';
 
   // --- INPUTS FROM BLOCK MARKUP ---
-  // 1st cell: anchor with the CF path; 2nd cell: variation name (optional)
+  // 1st cell anchor text: content fragment path
   const recipePath = block.querySelector(':scope div:nth-child(1) > div a')?.textContent?.trim();
-  const variationName = block.querySelector(':scope div:nth-child(2) > div')?.textContent?.trim() || 'master';
+  // 2nd cell: variation (optional)
+  const variationName = getCellText(':scope div:nth-child(2) > div') || 'master';
 
   if (!recipePath) {
     block.innerHTML = `<div class="recipe error">Missing recipe path in block configuration.</div>`;
     return;
   }
 
-  // --- URL RESOLUTION (author vs publish) ---
-  const isAuthor = typeof window !== 'undefined' && window.location?.origin?.includes('author');
+  // --- URL BUILD (author vs publish) ---
   const base = isAuthor ? aemauthorurl : aempublishurl;
+  const url = `${base}${persistedquery}`
+    + `;path=${encodeURIComponent(recipePath)}`
+    + `;variation=${encodeURIComponent(variationName)}`
+    + `;ts=${Date.now()}`; // cache-buster
 
-  const url =
-    `${base}${persistedquery}` +
-    `;path=${encodeURIComponent(recipePath)}` +
-    `;variation=${encodeURIComponent(variationName)}` +
-    `;ts=${Date.now()}`; // cache-buster
-
-  // --- HELPERS ---
-  const escapeHtml = (str) =>
-    (str || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-  const nl2br = (str) => escapeHtml(str).replace(/\r?\n/g, '<br>');
-
-  // --- DATA FETCH ---
-  let cf;
+  // --- FETCH DATA ---
+  let cf = null;
   try {
     const res = await fetch(url, { credentials: 'include' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    cf = json?.data?.recipeByPath?.item;
+    // Expecting: { data: { recipeByPath: { item: {...} } } }
+    cf = json?.data?.recipeByPath?.item || null;
   } catch (e) {
-    // Keep the console log helpful for authors/devs
     // eslint-disable-next-line no-console
     console.error('Recipe fetch failed:', e);
   }
@@ -95,51 +108,56 @@ export default async function decorate(block) {
     return;
   }
 
-  // --- UE RESOURCE TARGET (include variation) ---
+  // --- UE RESOURCE (include variation for correct authoring) ---
   const itemId = `urn:aemconnection:${recipePath}/jcr:content/data/${variationName}`;
 
-  // --- IMAGE ---
+  // --- IMAGE (use publish domain for media) ---
   const imgDynamic = cf?.recipeImage?._dynamicUrl;
-  // We follow your previous pattern: always serve media from publish
   const imgUrl = imgDynamic ? `${aempublishurl}${imgDynamic}` : '';
   const imgAlt = cf?.recipeImage?.description || cf?.recipeTitle || 'Recipe image';
+
+  // --- FIELDS ---
+  const title = cf?.recipeTitle || '';
+  const descriptionPlain = cf?.recipeDescription?.plaintext || '';
+  const ingredientsPlain = cf?.recipeIngredients?.plaintext || '';
+  const directionsPlain = cf?.recipeDirections?.plaintext || '';
 
   // --- RENDER ---
   block.innerHTML = `
     <div class="recipe" data-aue-resource="${itemId}" data-aue-label="recipe content fragment" data-aue-type="reference" data-aue-filter="cf">
-      <div class="recipe-hero" data-aue-prop="recipeImage" data-aue-label="recipe image" data-aue-type="media"
-          ${imgUrl ? `style="background-image: url('${imgUrl}');"` : ''}>
+      <div class="recipe-hero"
+           data-aue-prop="recipeImage" data-aue-label="recipe image" data-aue-type="media"
+           ${imgUrl ? `style="background-image: url('${imgUrl}');"` : ''}>
         ${imgUrl ? '' : '<div class="placeholder">No image</div>'}
-      </div>
-
-      <div class="recipe-body">
-        <h1 class="recipe-title" data-aue-prop="recipeTitle" data-aue-label="title" data-aue-type="text">
-          ${escapeHtml(cf?.recipeTitle || '')}
+        <!-- Optional accessibility image (keeps background layout while exposing alt text to AT) -->
+        ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(imgAlt)}" style="position:absolute;opacity:0;width:1pxe"
+            data-aue-prop="recipeTitle" data-aue-label="title" data-aue-type="text">
+          ${escapeHtml(title)}
         </h1>
 
-        <div class="recipe-description" data-aue-prop="recipeDescription" data-aue-label="description" data-aue-type="richtext">
-          ${nl2br(cf?.recipeDescription?.plaintext || '')}
+        <div class="recipe-description"
+             data-aue-prop="recipeDescription" data-aue-label="description" data-aue-type="richtext">
+          ${nl2br(descriptionPlain)}
         </div>
 
         <div class="recipe-sections">
           <section class="ingredients">
             <h2>Ingredients</h2>
-            <div class="ingredients-rt" data-aue-prop="recipeIngredients" data-aue-label="ingredients" data-aue-type="richtext">
-              ${nl2br(cf?.recipeIngredients?.plaintext || '')}
+            <div class="ingredients-rt"
+                 data-aue-prop="recipeIngredients" data-aue-label="ingredients" data-aue-type="richtext">
+              ${nl2br(ingredientsPlain)}
             </div>
           </section>
 
           <section class="directions">
             <h2>Directions</h2>
-            <div class="directions-rt" data-aue-prop="recipeDirections" data-aue-label="directions" data-aue-type="richtext">
-              ${nl2br(cf?.recipeDirections?.plaintext || '')}
+            <div class="directions-rt"
+                 data-aue-prop="recipeDirections" data-aue-label="directions" data-aue-type="richtext">
+              ${nl2br(directionsPlain)}
             </div>
           </section>
         </div>
       </div>
     </div>
   `;
-
-  // OPTIONAL: If you prefer an <img> instead of background-image, uncomment:
-  // const hero = block.querySelector('.recipe-hero');
-  // if (imgUrl) hero.innerHTML = `<img src="${imgUrl}" alt
+}
