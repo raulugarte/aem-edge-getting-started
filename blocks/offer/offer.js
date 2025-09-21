@@ -123,41 +123,22 @@ export default async function decorate(block) {
   const directionsPlain = cf?.recipeDirections?.plaintext || '';
 
   // --- RENDER ---
-  block.innerHTML = `
-    <div class="recipe" data-aue-resource="${itemId}" data-aue-label="recipe content fragment" data-aue-type="reference" data-aue-filter="cf">
-      <div class="recipe-hero"
-           data-aue-prop="recipeImage" data-aue-label="recipe image" data-aue-type="media"
-           ${imgUrl ? `style="background-image: url('${imgUrl}');"` : ''}>
-        ${imgUrl ? '' : '<div class="placeholder">No image</div>'}
-        <!-- Optional accessibility image (keeps background layout while exposing alt text to AT) -->
-        ${imgUrl ? `<img src="${imgUrl}" alt="${escapeHtml(imgAlt)}" style="position:absolute;opacity:0;width:1pxe"
-            data-aue-prop="recipeTitle" data-aue-label="title" data-aue-type="text">
-          ${escapeHtml(title)}
-        </h1>
+    block.innerHTML = `
+    <div class="banner-content" data-aue-resource="${itemId}" data-aue-label="Recipe Content Fragment" data-aue-type="reference" data-aue-filter="cf">
+      <div data-aue-prop="recipeImage" data-aue-label="Recipe Image" data-aue-type="media" class="banner-detail"
+           style="background-image: linear-gradient(90deg,rgba(0,0,0,0.6), rgba(0,0,0,0.1) 80%) ,url(${aempublishurl + cfData.recipeImage?._dynamicUrl || ''});">
 
-        <div class="recipe-description"
-             data-aue-prop="recipeDescription" data-aue-label="description" data-aue-type="richtext">
-          ${nl2br(descriptionPlain)}
-        </div>
+        <p data-aue-prop="recipeTitle" data-aue-label="Title" data-aue-type="text" class="headline">${cfData.recipeTitle || ''}</p>
+        <p data-aue-prop="recipeDescription" data-aue-label="Description" data-aue-type="richtext" class="description">${cfData.recipeDescription?.plaintext || ''}</p>
 
-        <div class="recipe-sections">
-          <section class="ingredients">
-            <h2>Ingredients</h2>
-            <div class="ingredients-rt"
-                 data-aue-prop="recipeIngredients" data-aue-label="ingredients" data-aue-type="richtext">
-              ${nl2br(ingredientsPlain)}
-            </div>
-          </section>
+        <h4>Ingredients:</h4>
+        <p data-aue-prop="recipeIngredients" data-aue-label="Ingredients" data-aue-type="richtext" class="ingredients">${cfData.recipeIngredients?.plaintext || ''}</p>
 
-          <section class="directions">
-            <h2>Directions</h2>
-            <div class="directions-rt"
-                 data-aue-prop="recipeDirections" data-aue-label="directions" data-aue-type="richtext">
-              ${nl2br(directionsPlain)}
-            </div>
-          </section>
-        </div>
+        <h4>Directions:</h4>
+        <p data-aue-prop="recipeDirections" data-aue-label="Directions" data-aue-type="richtext" class="directions">${cfData.recipeDirections?.plaintext || ''}</p>
+
       </div>
+      <div class='banner-logo'></div>
     </div>
   `;
 }
